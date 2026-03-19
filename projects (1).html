@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Projects</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&family=Tajawal:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+
+  <style>
+    :root {
+      --bg:     #ffffff;
+      --text:   #0a0a0a;
+      --muted:  #999;
+      --accent: #981B1E;
+      --border: #e8e8e8;
+      --gap:    12px;
+      --radius: 6px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Tajawal', sans-serif;
+      min-height: 100vh;
+    }
+
+    /* ── Filters ── */
+    .filters-wrap {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      padding: 18px clamp(20px, 5vw, 60px);
+    }
+
+    .filters {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .count-badge {
+      margin-right: auto;
+      font-size: 0.72rem;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+      font-weight: 300;
+    }
+
+    .filter-divider {
+      width: 1px;
+      height: 13px;
+      background: var(--border);
+    }
+
+    .filter-btn {
+      font-family: 'Tajawal', sans-serif;
+      font-size: 0.76rem;
+      font-weight: 400;
+      letter-spacing: 0.13em;
+      color: var(--muted);
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid transparent;
+      padding: 4px 2px;
+      margin: 0 10px;
+      cursor: pointer;
+      transition: color 0.2s, border-color 0.2s;
+      text-transform: uppercase;
+    }
+
+    .filter-btn:hover { color: var(--text); }
+
+    .filter-btn.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+      font-weight: 500;
+    }
+
+    /* ── Masonry ── */
+    .grid-wrap {
+      padding: 24px clamp(20px, 5vw, 60px) 60px;
+    }
+
+    .masonry {
+      columns: 4 220px;
+      column-gap: var(--gap);
+    }
+
+    /* ── Card ── */
+    .card {
+      break-inside: avoid;
+      margin-bottom: var(--gap);
+      border-radius: var(--radius);
+      overflow: hidden;
+      position: relative;
+      cursor: pointer;
+      animation: fadeUp 0.45s ease both;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .card img {
+      width: 100%;
+      height: auto;
+      display: block;
+      transition: transform 0.55s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+
+    .card:hover img { transform: scale(1.04); }
+
+    .card-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(255,255,255,0.93);
+      opacity: 0;
+      transition: opacity 0.28s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+    }
+
+    .card:hover .card-overlay { opacity: 1; }
+
+    .card-line {
+      width: 24px;
+      height: 1px;
+      background: var(--accent);
+      transform: scaleX(0);
+      transition: transform 0.3s ease;
+    }
+
+    .card:hover .card-line { transform: scaleX(1); }
+
+    .card-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1rem;
+      font-weight: 400;
+      color: var(--text);
+      letter-spacing: 0.04em;
+      transform: translateY(5px);
+      transition: transform 0.28s ease 0.04s;
+    }
+
+    .card:hover .card-title { transform: translateY(0); }
+
+    .card-cat {
+      font-size: 0.67rem;
+      font-weight: 400;
+      color: var(--accent);
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      transform: translateY(5px);
+      transition: transform 0.28s ease 0.07s;
+    }
+
+    .card:hover .card-cat { transform: translateY(0); }
+
+    /* ── Loading / Empty ── */
+    .loading-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 100px 0;
+      gap: 16px;
+      column-span: all;
+    }
+
+    .spinner {
+      width: 28px;
+      height: 28px;
+      border: 1.5px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.75s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .loading-text {
+      font-size: 0.76rem;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+    }
+
+    .empty-state {
+      display: none;
+      text-align: center;
+      padding: 80px 0;
+      column-span: all;
+    }
+
+    .empty-text {
+      font-size: 0.8rem;
+      color: var(--muted);
+      letter-spacing: 0.06em;
+    }
+
+    /* ── Lightbox ── */
+    .lightbox {
+      position: fixed;
+      inset: 0;
+      z-index: 999;
+      background: rgba(255,255,255,0.97);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .lightbox.open {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .lightbox-img {
+      max-width: 88vw;
+      max-height: 88vh;
+      display: block;
+      border-radius: var(--radius);
+      box-shadow: 0 16px 50px rgba(0,0,0,0.08);
+    }
+
+    .lightbox-meta {
+      position: absolute;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%);
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    .lb-meta-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 0.95rem;
+      color: var(--text);
+      font-weight: 400;
+    }
+
+    .lb-meta-cat {
+      font-size: 0.67rem;
+      color: var(--accent);
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      margin-top: 4px;
+    }
+
+    .lb-close {
+      position: fixed;
+      top: 22px;
+      left: 26px;
+      width: 40px;
+      height: 40px;
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      background: transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+
+    .lb-close:hover { border-color: var(--accent); }
+
+    .lb-close svg {
+      width: 15px;
+      height: 15px;
+      stroke: var(--text);
+      fill: none;
+      stroke-width: 1.5;
+    }
+
+    .lb-nav {
+      position: fixed;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 42px;
+      height: 42px;
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      background: transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+
+    .lb-nav:hover { border-color: var(--accent); }
+    .lb-nav svg { width: 17px; height: 17px; stroke: var(--text); fill: none; stroke-width: 1.5; }
+    .lb-prev { right: 22px; }
+    .lb-next { left: 22px; }
+
+    /* ── Responsive ── */
+    @media (max-width: 768px) {
+      .masonry { columns: 2 150px; }
+      .count-badge { display: none; }
+    }
+
+    @media (max-width: 420px) {
+      .masonry { columns: 1; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Filters -->
+  <div class="filters-wrap">
+    <div class="filters" id="filtersContainer">
+      <span class="count-badge" id="countBadge">— / —</span>
+      <button class="filter-btn active" data-cat="all">الكل</button>
+    </div>
+  </div>
+
+  <!-- Grid -->
+  <div class="grid-wrap">
+    <div class="masonry" id="masonryGrid">
+      <div class="loading-state" id="loadingState" style="column-span:all">
+        <div class="spinner"></div>
+        <p class="loading-text">جارٍ التحميل…</p>
+      </div>
+      <div class="empty-state" id="emptyState" style="column-span:all">
+        <p class="empty-text">لا توجد أعمال في هذا التصنيف</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lightbox -->
+  <div class="lightbox" id="lightbox">
+    <button class="lb-close" id="lbClose">
+      <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+    <button class="lb-nav lb-prev" id="lbPrev">
+      <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+    </button>
+    <button class="lb-nav lb-next" id="lbNext">
+      <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <img class="lightbox-img" id="lbImg" src="" alt="" />
+    <div class="lightbox-meta">
+      <div class="lb-meta-title" id="lbTitle"></div>
+      <div class="lb-meta-cat" id="lbCat"></div>
+    </div>
+  </div>
+
+  <script>
+    firebase.initializeApp({
+      apiKey:            "AIzaSyAaqn0emE1XRE1r95jzz6zOyHJpYhG6PDE",
+      authDomain:        "taj-alibdaa.firebaseapp.com",
+      projectId:         "taj-alibdaa",
+      storageBucket:     "taj-alibdaa.firebasestorage.app",
+      messagingSenderId: "822530121102",
+      appId:             "1:822530121102:web:4f105f37c9b7a31e9298df",
+      measurementId:     "G-59X0VPPWXE"
+    });
+
+    const db   = firebase.firestore();
+    const CLOUD = "taj-alibdaa";
+
+    function cdnUrl(id, w = 700) {
+      if (!id) return '';
+      if (id.startsWith('http')) return id;
+      return `https://res.cloudinary.com/${CLOUD}/image/upload/f_auto,q_auto,w_${w}/${id}`;
+    }
+
+    let all = [], filtered = [], lbIndex = 0;
+
+    const grid      = document.getElementById('masonryGrid');
+    const loadingEl = document.getElementById('loadingState');
+    const emptyEl   = document.getElementById('emptyState');
+    const filtersEl = document.getElementById('filtersContainer');
+    const countEl   = document.getElementById('countBadge');
+    const lightbox  = document.getElementById('lightbox');
+    const lbImg     = document.getElementById('lbImg');
+    const lbTitle   = document.getElementById('lbTitle');
+    const lbCat     = document.getElementById('lbCat');
+
+    async function load() {
+      try {
+        const snap = await db.collection('projects').orderBy('order','asc').get()
+          .catch(() => db.collection('projects').get());
+        all = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        filtered = [...all];
+        buildFilters();
+        render(filtered);
+        updateCount();
+      } catch(e) {
+        loadingEl.innerHTML = '<p style="font-size:.78rem;color:#999;letter-spacing:.06em">تعذّر الاتصال بـ Firebase</p>';
+      }
+    }
+
+    function buildFilters() {
+      const cats = [...new Set(all.map(p => p.category).filter(Boolean))];
+      const allBtn = filtersEl.querySelector('[data-cat="all"]');
+
+      cats.forEach((cat, i) => {
+        const d = document.createElement('span');
+        d.className = 'filter-divider';
+        filtersEl.appendChild(d);
+
+        const btn = document.createElement('button');
+        btn.className = 'filter-btn';
+        btn.dataset.cat = cat;
+        btn.textContent = cat;
+        btn.addEventListener('click', () => setFilter(cat, btn));
+        filtersEl.appendChild(btn);
+      });
+
+      allBtn.addEventListener('click', () => setFilter('all', allBtn));
+    }
+
+    function setFilter(cat, btn) {
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      filtered = cat === 'all' ? [...all] : all.filter(p => p.category === cat);
+      render(filtered);
+      updateCount();
+    }
+
+    function render(projects) {
+      grid.querySelectorAll('.card').forEach(c => c.remove());
+      loadingEl.style.display = 'none';
+
+      if (!projects.length) { emptyEl.style.display = 'block'; return; }
+      emptyEl.style.display = 'none';
+
+      projects.forEach((p, i) => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.style.animationDelay = `${i * 0.055}s`;
+        const src = cdnUrl(p.imageUrl || p.image || '');
+        card.innerHTML = `
+          <img src="${src}" alt="${p.title || ''}" loading="lazy"
+               onerror="this.src='https://placehold.co/600x800/f5f5f5/ccc?text=—'" />
+          <div class="card-overlay">
+            <div class="card-line"></div>
+            <div class="card-title">${p.title || ''}</div>
+            <div class="card-cat">${p.category || ''}</div>
+          </div>`;
+        card.addEventListener('click', () => openLb(i));
+        grid.appendChild(card);
+      });
+    }
+
+    function updateCount() {
+      countEl.textContent = `${filtered.length} / ${all.length}`;
+    }
+
+    function openLb(i) {
+      lbIndex = i; showLb();
+      lightbox.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function showLb() {
+      const p = filtered[lbIndex];
+      if (!p) return;
+      lbImg.src = cdnUrl(p.imageUrl || p.image || '', 1400);
+      lbImg.alt = p.title || '';
+      lbTitle.textContent = p.title || '';
+      lbCat.textContent   = p.category || '';
+    }
+
+    function closeLb() {
+      lightbox.classList.remove('open');
+      document.body.style.overflow = '';
+    }
+
+    document.getElementById('lbClose').addEventListener('click', closeLb);
+    document.getElementById('lbPrev').addEventListener('click', () => { lbIndex = (lbIndex + 1) % filtered.length; showLb(); });
+    document.getElementById('lbNext').addEventListener('click', () => { lbIndex = (lbIndex - 1 + filtered.length) % filtered.length; showLb(); });
+    lightbox.addEventListener('click', e => { if (e.target === lightbox) closeLb(); });
+    document.addEventListener('keydown', e => {
+      if (!lightbox.classList.contains('open')) return;
+      if (e.key === 'Escape')     closeLb();
+      if (e.key === 'ArrowRight') { lbIndex = (lbIndex + 1) % filtered.length; showLb(); }
+      if (e.key === 'ArrowLeft')  { lbIndex = (lbIndex - 1 + filtered.length) % filtered.length; showLb(); }
+    });
+
+    load();
+  </script>
+</body>
+</html>

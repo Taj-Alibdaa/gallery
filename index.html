@@ -5,19 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Projects</title>
 
-  <!-- ── Baloo Bhaijaan 2 ── -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-  <!-- ── Firebase SDKs ── -->
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
-
   <style>
-    /* ─────────────────────────────────────────
-       Variables
-    ───────────────────────────────────────── */
     :root {
       --bg:      #ffffff;
       --text:    #0a0a0a;
@@ -39,32 +31,28 @@
       min-height: 100vh;
     }
 
-    /* ─────────────────────────────────────────
-       Status bar (connection feedback)
-    ───────────────────────────────────────── */
+    /* ── Status toast ── */
     #statusBar {
-      display: none;
       position: fixed;
       bottom: 20px;
       left: 50%;
       transform: translateX(-50%);
-      z-index: 999;
+      z-index: 9999;
       padding: 10px 22px;
       border-radius: 100px;
-      font-size: 0.78rem;
       font-family: var(--font);
+      font-size: 0.78rem;
       letter-spacing: 0.06em;
       white-space: nowrap;
       pointer-events: none;
-      transition: opacity 0.4s;
+      opacity: 0;
+      transition: opacity 0.35s ease;
     }
+    #statusBar.show     { opacity: 1; }
+    #statusBar.ok       { background: #0a0a0a; color: #fff; }
+    #statusBar.err      { background: var(--accent); color: #fff; }
 
-    #statusBar.ok  { background: #0a0a0a; color: #fff; display: block; }
-    #statusBar.err { background: var(--accent); color: #fff; display: block; }
-
-    /* ─────────────────────────────────────────
-       Filters strip
-    ───────────────────────────────────────── */
+    /* ── Filters ── */
     .filters-wrap {
       position: sticky;
       top: 0;
@@ -82,12 +70,11 @@
     }
 
     .count-badge {
-      margin-right: auto;          /* pushes filters to left in RTL */
+      margin-right: auto;
       font-size: 0.72rem;
       color: var(--muted);
       letter-spacing: 0.06em;
       font-weight: 400;
-      min-width: 48px;
     }
 
     .filter-divider {
@@ -120,9 +107,7 @@
       font-weight: 600;
     }
 
-    /* ─────────────────────────────────────────
-       Masonry grid
-    ───────────────────────────────────────── */
+    /* ── Grid ── */
     .grid-wrap {
       padding: 24px clamp(20px, 5vw, 60px) 60px;
     }
@@ -132,9 +117,7 @@
       column-gap: var(--gap);
     }
 
-    /* ─────────────────────────────────────────
-       Card
-    ───────────────────────────────────────── */
+    /* ── Card ── */
     .card {
       break-inside: avoid;
       margin-bottom: var(--gap);
@@ -162,7 +145,7 @@
     .card-overlay {
       position: absolute;
       inset: 0;
-      background: rgba(255, 255, 255, 0.93);
+      background: rgba(255,255,255,0.93);
       opacity: 0;
       transition: opacity 0.28s ease;
       display: flex;
@@ -189,11 +172,10 @@
       font-size: 0.92rem;
       font-weight: 600;
       color: var(--text);
-      letter-spacing: 0.02em;
-      transform: translateY(5px);
-      transition: transform 0.28s ease 0.04s;
       text-align: center;
       padding: 0 12px;
+      transform: translateY(5px);
+      transition: transform 0.28s ease 0.04s;
     }
 
     .card:hover .card-title { transform: translateY(0); }
@@ -210,9 +192,7 @@
 
     .card:hover .card-cat { transform: translateY(0); }
 
-    /* ─────────────────────────────────────────
-       Loading / Empty
-    ───────────────────────────────────────── */
+    /* ── Loading / Empty ── */
     .loading-state {
       display: flex;
       flex-direction: column;
@@ -252,14 +232,12 @@
       letter-spacing: 0.06em;
     }
 
-    /* ─────────────────────────────────────────
-       Lightbox
-    ───────────────────────────────────────── */
+    /* ── Lightbox ── */
     .lightbox {
       position: fixed;
       inset: 0;
       z-index: 999;
-      background: rgba(255, 255, 255, 0.97);
+      background: rgba(255,255,255,0.97);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -269,17 +247,14 @@
       transition: opacity 0.3s ease;
     }
 
-    .lightbox.open {
-      opacity: 1;
-      pointer-events: all;
-    }
+    .lightbox.open { opacity: 1; pointer-events: all; }
 
     .lightbox-img {
       max-width: 88vw;
       max-height: 88vh;
       display: block;
       border-radius: var(--radius);
-      box-shadow: 0 16px 50px rgba(0, 0, 0, 0.08);
+      box-shadow: 0 16px 50px rgba(0,0,0,0.08);
     }
 
     .lightbox-meta {
@@ -321,40 +296,18 @@
 
     .lb-close:hover, .lb-nav:hover { border-color: var(--accent); }
 
-    .lb-close {
-      top: 22px;
-      left: 26px;
-      width: 40px;
-      height: 40px;
-    }
+    .lb-close { top: 22px; left: 26px; width: 40px; height: 40px; }
+    .lb-close svg { width: 15px; height: 15px; stroke: var(--text); fill: none; stroke-width: 1.5; }
 
-    .lb-close svg {
-      width: 15px;
-      height: 15px;
-      stroke: var(--text);
-      fill: none;
-      stroke-width: 1.5;
-    }
-
-    .lb-nav {
-      top: 50%;
-      transform: translateY(-50%);
-      width: 42px;
-      height: 42px;
-    }
-
+    .lb-nav { top: 50%; transform: translateY(-50%); width: 42px; height: 42px; }
     .lb-nav svg { width: 17px; height: 17px; stroke: var(--text); fill: none; stroke-width: 1.5; }
     .lb-prev { right: 22px; }
-    .lb-next { left: 22px; }
+    .lb-next  { left:  22px; }
 
-    /* ─────────────────────────────────────────
-       Responsive
-    ───────────────────────────────────────── */
     @media (max-width: 768px) {
       .masonry { columns: 2 150px; }
       .count-badge { display: none; }
     }
-
     @media (max-width: 420px) {
       .masonry { columns: 1; }
     }
@@ -362,7 +315,7 @@
 </head>
 <body>
 
-  <!-- ── Filters ─────────────────────────────────── -->
+  <!-- Filters -->
   <div class="filters-wrap">
     <div class="filters" id="filtersContainer">
       <span class="count-badge" id="countBadge">— / —</span>
@@ -370,7 +323,7 @@
     </div>
   </div>
 
-  <!-- ── Grid ────────────────────────────────────── -->
+  <!-- Grid -->
   <div class="grid-wrap">
     <div class="masonry" id="masonryGrid">
       <div class="loading-state" id="loadingState" style="column-span:all">
@@ -383,7 +336,7 @@
     </div>
   </div>
 
-  <!-- ── Lightbox ─────────────────────────────────── -->
+  <!-- Lightbox -->
   <div class="lightbox" id="lightbox">
     <button class="lb-close" id="lbClose">
       <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -397,18 +350,23 @@
     <img class="lightbox-img" id="lbImg" src="" alt="" />
     <div class="lightbox-meta">
       <div class="lb-meta-title" id="lbTitle"></div>
-      <div class="lb-meta-cat" id="lbCat"></div>
+      <div class="lb-meta-cat"  id="lbCat"></div>
     </div>
   </div>
 
-  <!-- ── Connection status toast ───────────────────── -->
+  <!-- Status toast -->
   <div id="statusBar"></div>
 
-  <script>
-    /* ════════════════════════════════════════════════
-       1. Firebase — initialise & connect
-    ════════════════════════════════════════════════ */
-    const firebaseConfig = {
+  <!-- ════════════════════════════════════════
+       Firebase Modular SDK  ← fixes the error
+  ════════════════════════════════════════ -->
+  <script type="module">
+    import { initializeApp }                        from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+    import { getFirestore, collection, getDocs,
+             query, orderBy }                       from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+    /* ── Firebase config ── */
+    const app = initializeApp({
       apiKey:            "AIzaSyAaqn0emE1XRE1r95jzz6zOyHJpYhG6PDE",
       authDomain:        "taj-alibdaa.firebaseapp.com",
       projectId:         "taj-alibdaa",
@@ -416,54 +374,32 @@
       messagingSenderId: "822530121102",
       appId:             "1:822530121102:web:4f105f37c9b7a31e9298df",
       measurementId:     "G-59X0VPPWXE"
-    };
+    });
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
+    const db = getFirestore(app);
 
-    /* ════════════════════════════════════════════════
-       2. Cloudinary — URL builder
-       Cloud name : taj-alibdaa
-       ID         : 2aae9fb3649b8b14e41b12bb8e8cc3
-    ════════════════════════════════════════════════ */
-    const CLOUDINARY_CLOUD = "taj-alibdaa";
+    /* ── Cloudinary ── */
+    const CLOUD = "taj-alibdaa";
 
-    /**
-     * Build an optimised Cloudinary delivery URL.
-     * Accepts either:
-     *   - A raw public_id  → "folder/my-image"
-     *   - A full URL       → "https://res.cloudinary.com/…"  (returned as-is)
-     */
-    function cdnUrl(publicId, width = 700) {
-      if (!publicId) return '';
-      if (publicId.startsWith('http')) return publicId;
-      return `https://res.cloudinary.com/${CLOUDINARY_CLOUD}/image/upload/f_auto,q_auto,w_${width}/${publicId}`;
+    function cdnUrl(id, w = 700) {
+      if (!id) return '';
+      if (id.startsWith('http')) return id;
+      return `https://res.cloudinary.com/${CLOUD}/image/upload/f_auto,q_auto,w_${w}/${id}`;
     }
 
-    /* ════════════════════════════════════════════════
-       3. Status toast helper
-    ════════════════════════════════════════════════ */
-    function toast(msg, type = 'ok', duration = 2800) {
-      const bar = document.getElementById('statusBar');
-      bar.textContent = msg;
-      bar.className = type;
-      clearTimeout(bar._timer);
-      bar._timer = setTimeout(() => {
-        bar.style.opacity = '0';
-        setTimeout(() => { bar.className = ''; bar.style.opacity = '1'; }, 400);
-      }, duration);
+    /* ── Toast ── */
+    function toast(msg, type = 'ok', ms = 3000) {
+      const el = document.getElementById('statusBar');
+      el.textContent = msg;
+      el.className   = `show ${type}`;
+      clearTimeout(el._t);
+      el._t = setTimeout(() => el.classList.remove('show'), ms);
     }
 
-    /* ════════════════════════════════════════════════
-       4. State
-    ════════════════════════════════════════════════ */
-    let all      = [];
-    let filtered = [];
-    let lbIndex  = 0;
+    /* ── State ── */
+    let all = [], filtered = [], lbIndex = 0;
 
-    /* ════════════════════════════════════════════════
-       5. DOM refs
-    ════════════════════════════════════════════════ */
+    /* ── DOM ── */
     const grid      = document.getElementById('masonryGrid');
     const loadingEl = document.getElementById('loadingState');
     const emptyEl   = document.getElementById('emptyState');
@@ -474,25 +410,24 @@
     const lbTitle   = document.getElementById('lbTitle');
     const lbCat     = document.getElementById('lbCat');
 
-    /* ════════════════════════════════════════════════
-       6. Load projects from Firestore
-       Collection : "projects"
-       Fields     : imageUrl | image | title | category | order
-    ════════════════════════════════════════════════ */
+    /* ── Load from Firestore ──
+       Collection: "projects"
+       Fields    : imageUrl | image | title | category | order
+    ── */
     async function load() {
       try {
         let snap;
         try {
-          snap = await db.collection('projects').orderBy('order', 'asc').get();
+          const q = query(collection(db, 'projects'), orderBy('order', 'asc'));
+          snap = await getDocs(q);
         } catch {
-          // collection might not have an "order" field — fallback
-          snap = await db.collection('projects').get();
+          snap = await getDocs(collection(db, 'projects'));
         }
 
         all      = snap.docs.map(d => ({ id: d.id, ...d.data() }));
         filtered = [...all];
 
-        toast(`✓ تم الاتصال بـ Firebase — ${all.length} مشروع`, 'ok');
+        toast(`✓ Firebase متصل — ${all.length} مشروع`, 'ok');
         buildFilters();
         render(filtered);
         updateCount();
@@ -500,23 +435,21 @@
       } catch (err) {
         console.error('Firebase error:', err);
         loadingEl.style.display = 'none';
-        toast('تعذّر الاتصال بـ Firebase — تحقق من الإعدادات', 'err', 5000);
         emptyEl.style.display   = 'block';
         emptyEl.querySelector('.empty-text').textContent =
-          'تعذّر تحميل الأعمال — تأكد من إعدادات Firebase';
+          'تعذّر التحميل — تأكد من قواعد Firestore';
+        toast('خطأ في الاتصال — راجع الـ Console', 'err', 6000);
       }
     }
 
-    /* ════════════════════════════════════════════════
-       7. Build filter buttons from Firestore categories
-    ════════════════════════════════════════════════ */
+    /* ── Build filter buttons ── */
     function buildFilters() {
       const cats = [...new Set(all.map(p => p.category).filter(Boolean))];
 
       cats.forEach(cat => {
-        const div = document.createElement('span');
-        div.className = 'filter-divider';
-        filtersEl.appendChild(div);
+        const sep = document.createElement('span');
+        sep.className = 'filter-divider';
+        filtersEl.appendChild(sep);
 
         const btn = document.createElement('button');
         btn.className   = 'filter-btn';
@@ -526,14 +459,11 @@
         filtersEl.appendChild(btn);
       });
 
-      // wire "الكل" button
       filtersEl.querySelector('[data-cat="all"]')
                .addEventListener('click', function () { setFilter('all', this); });
     }
 
-    /* ════════════════════════════════════════════════
-       8. Filter logic
-    ════════════════════════════════════════════════ */
+    /* ── Filter ── */
     function setFilter(cat, btn) {
       document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
@@ -542,17 +472,12 @@
       updateCount();
     }
 
-    /* ════════════════════════════════════════════════
-       9. Render cards — images served via Cloudinary
-    ════════════════════════════════════════════════ */
+    /* ── Render cards ── */
     function render(projects) {
       grid.querySelectorAll('.card').forEach(c => c.remove());
       loadingEl.style.display = 'none';
 
-      if (!projects.length) {
-        emptyEl.style.display = 'block';
-        return;
-      }
+      if (!projects.length) { emptyEl.style.display = 'block'; return; }
       emptyEl.style.display = 'none';
 
       projects.forEach((p, i) => {
@@ -560,20 +485,15 @@
         card.className = 'card';
         card.style.animationDelay = `${i * 0.055}s`;
 
-        // imageUrl : can be a Cloudinary public_id or a full URL
         const src = cdnUrl(p.imageUrl || p.image || '', 700);
 
         card.innerHTML = `
-          <img
-            src="${src}"
-            alt="${p.title || ''}"
-            loading="lazy"
-            onerror="this.src='https://placehold.co/600x800/f5f5f5/ccc?text=—'"
-          />
+          <img src="${src}" alt="${p.title || ''}" loading="lazy"
+               onerror="this.src='https://placehold.co/600x800/f5f5f5/ccc?text=—'" />
           <div class="card-overlay">
             <div class="card-line"></div>
-            <div class="card-title">${p.title || ''}</div>
-            <div class="card-cat">${p.category || ''}</div>
+            <div class="card-title">${p.title    || ''}</div>
+            <div class="card-cat">${p.category  || ''}</div>
           </div>`;
 
         card.addEventListener('click', () => openLb(i));
@@ -585,12 +505,9 @@
       countEl.textContent = `${filtered.length} / ${all.length}`;
     }
 
-    /* ════════════════════════════════════════════════
-       10. Lightbox
-    ════════════════════════════════════════════════ */
+    /* ── Lightbox ── */
     function openLb(i) {
-      lbIndex = i;
-      showLb();
+      lbIndex = i; showLb();
       lightbox.classList.add('open');
       document.body.style.overflow = 'hidden';
     }
@@ -598,9 +515,8 @@
     function showLb() {
       const p = filtered[lbIndex];
       if (!p) return;
-      // Use higher resolution in lightbox via Cloudinary
-      lbImg.src = cdnUrl(p.imageUrl || p.image || '', 1400);
-      lbImg.alt = p.title || '';
+      lbImg.src           = cdnUrl(p.imageUrl || p.image || '', 1400);
+      lbImg.alt           = p.title    || '';
       lbTitle.textContent = p.title    || '';
       lbCat.textContent   = p.category || '';
     }
@@ -611,19 +527,9 @@
     }
 
     document.getElementById('lbClose').addEventListener('click', closeLb);
-
-    document.getElementById('lbPrev').addEventListener('click', () => {
-      lbIndex = (lbIndex + 1) % filtered.length;
-      showLb();
-    });
-
-    document.getElementById('lbNext').addEventListener('click', () => {
-      lbIndex = (lbIndex - 1 + filtered.length) % filtered.length;
-      showLb();
-    });
-
+    document.getElementById('lbPrev').addEventListener('click', () => { lbIndex = (lbIndex + 1) % filtered.length; showLb(); });
+    document.getElementById('lbNext').addEventListener('click', () => { lbIndex = (lbIndex - 1 + filtered.length) % filtered.length; showLb(); });
     lightbox.addEventListener('click', e => { if (e.target === lightbox) closeLb(); });
-
     document.addEventListener('keydown', e => {
       if (!lightbox.classList.contains('open')) return;
       if (e.key === 'Escape')     closeLb();
@@ -631,9 +537,6 @@
       if (e.key === 'ArrowLeft')  { lbIndex = (lbIndex - 1 + filtered.length) % filtered.length; showLb(); }
     });
 
-    /* ════════════════════════════════════════════════
-       11. Boot
-    ════════════════════════════════════════════════ */
     load();
   </script>
 </body>
